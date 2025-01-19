@@ -1,2 +1,2 @@
 # Fishg
-Fishg is a game made originally on websim
+Fishg is still in its beta stage, there are ong bugs
