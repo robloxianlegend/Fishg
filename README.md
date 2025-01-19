@@ -1,4 +1,8 @@
 # Fishg
-Fishg is still in its beta stage, there are ong bugs
+- Fishg is still in its beta stage.
 
-# FISHG IS OPENSOURCE!!
+# Play Fishg
+- https://fishg.pages.dev
+
+# Contribute to Fishg
+- Fork this rep and i'll consider the stuff you add
