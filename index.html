@@ -1,0 +1,1613 @@
+  <meta charset="UTF-8">
+  <title>fishg!</title>
+  <style>
+    @font-face {
+      font-family: 'Tahoma';
+      src: url('windows-xp-tahoma.ttf') format('truetype');
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: skyblue;
+      font-family: 'Tahoma', sans-serif;
+      user-select: none;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      transition: transform 0.2s linear;
+      will-change: transform;
+    }
+
+    #ocean {
+      position: absolute;
+      top: 40%;
+      left: 0;
+      width: 100%;
+      height: 3000px;
+      background: linear-gradient(180deg, 
+        #189eff 0%,
+        #1585d8 20%,
+        #116ba9 40%,
+        #0d5180 60%, 
+        #093756 80%,
+        #051d2d 100%
+      );
+      z-index: -1;
+    }
+
+    #deep-ocean {
+      position: absolute;
+      top: calc(40% + 3000px); 
+      left: 0;
+      width: 100%;
+      height: 3000px;
+      background: linear-gradient(180deg,
+        #051d2d 0%,
+        #041825 20%,
+        #03131d 40%,
+        #020e15 60%,
+        #01090d 80%,
+        #000405 100%
+      );
+      z-index: -1;
+    }
+
+    #boat {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      image-rendering: pixelated;
+      width: 100px;
+    }
+
+    #rod {
+      position: absolute;
+      top: 28%;
+      left: 55%;  
+      transform: translateX(-50%);
+      width: 60px;  
+      image-rendering: pixelated;
+      z-index: 2;
+    }
+
+    #hook {
+      position: absolute;
+      width: 12px; 
+      image-rendering: pixelated;
+      z-index: 1;
+      transform: translateZ(0);
+    }
+
+    #hook-fire {
+      position: absolute;
+      width: 20px;
+      height: auto;
+      opacity: 0.5;
+      pointer-events: none;
+      image-rendering: pixelated;
+      z-index: 3;
+      display: none;
+    }
+
+    #fishing-line {
+      position: absolute;
+      border-left: 2px solid #666;
+      transform-origin: top;
+      z-index: 1;
+    }
+
+    .fish {
+      position: absolute;
+      width: 30px; 
+      image-rendering: pixelated;
+      transition: transform 0.3s;
+      will-change: transform;
+    }
+
+    .teethy-fish {
+      width: 60px !important; 
+    }
+
+    .shark-fish {
+      width: 90px !important; 
+    }
+
+    .jellyfish {
+      width: 45px !important;
+      animation: float-updown 3s ease-in-out infinite;
+    }
+
+    .anglerfish {
+      width: 60px !important;
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    .electric-eel {
+      width: 60px !important;
+      animation: electric-glow 1s ease-in-out infinite;
+    }
+
+    .hellfish {
+      width: 60px !important;
+      animation: hell-glow 2s ease-in-out infinite;
+    }
+
+    .junkfish {
+      width: 60px !important;
+    }
+
+    .junk {
+      width: 30px !important;
+    }
+
+    .epic-fish {
+      width: 60px !important;
+      animation: glow 2s ease-in-out infinite;
+      filter: hue-rotate(45deg);
+    }
+
+    .legendary-fish {
+      width: 60px !important;
+      animation: glow 1s ease-in-out infinite;
+      filter: hue-rotate(90deg);
+    }
+
+    .godly-fish {
+      width: 60px !important;
+      animation: glow 0.5s ease-in-out infinite;
+      filter: hue-rotate(180deg);
+    }
+
+    @keyframes float-updown {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes glow {
+      0% {
+        filter: drop-shadow(0 0 2px cyan);
+      }
+      50% {
+        filter: drop-shadow(0 0 10px cyan);
+      }
+      100% {
+        filter: drop-shadow(0 0 2px cyan);
+      }
+    }
+
+    @keyframes electric-glow {
+      0% { filter: brightness(100%); }
+      50% { filter: brightness(120%); }
+      100% { filter: brightness(100%); }
+    }
+
+    @keyframes hell-glow {
+      0% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(45deg); }
+      100% { filter: hue-rotate(0deg); }
+    }
+
+    #hook.stunned {
+      filter: brightness(0.5);
+      animation: stun-blink 0.1s infinite;
+    }
+
+    @keyframes stun-blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+
+    #water-border {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      height: 20px;
+      background: url('watersurfaceborder.png') repeat-x;
+      background-size: contain;
+      image-rendering: pixelated;
+    }
+
+    #score {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    #depth-counter {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      font-size: 24px; 
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    .cloud {
+      position: absolute;
+      width: 100px;
+      image-rendering: pixelated;
+      animation: float 20s linear infinite;
+    }
+
+    .cloud-row-1 { 
+      top: 5%; 
+    }
+
+    .cloud-row-2 { 
+      top: 15%; 
+    }
+
+    @keyframes float {
+      from { transform: translateX(-100px); }
+      to { transform: translateX(calc(100vw + 100px)); }
+    }
+
+    .caught-fish {
+      animation: fling 1s forwards;
+    }
+
+    @keyframes fling {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-500px) rotate(720deg); }
+    }
+
+    #summary-screen, #fishgopedia, #shop, #codes {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      z-index: 100;
+      text-align: center;
+      min-width: 300px;
+      max-width: 600px;
+      width: 90%;
+      border: 2px solid #189eff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #summary-screen h2, #fishgopedia h2, #shop h2, #codes h2 {
+      margin-top: 0;
+      color: #ffeb3b;
+    }
+
+    #summary-screen p, #fishgopedia p, #shop p, #codes p {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+
+    button {
+      background: linear-gradient(180deg, #189eff 0%, #1585d8 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Tahoma', sans-serif;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(180deg, #1585d8 0%, #116ba9 100%);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .title-button {
+      background: linear-gradient(180deg, #189eff 0%, #1585d8 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 24px;
+      border-radius: 8px;
+      margin: 10px;
+      cursor: pointer;
+      font-family: 'Tahoma', sans-serif;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .title-button:hover {
+      transform: scale(1.05) translateY(-2px);
+      background: linear-gradient(180deg, #1585d8 0%, #116ba9 100%);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .title-button:active {
+      transform: scale(0.98) translateY(1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .shop-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .shop-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .fish-entry {
+      border: 1px solid #666;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .fish-entry:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .fish-entry img {
+      width: 100px;
+      height: auto;
+      image-rendering: pixelated;
+      vertical-align: middle;
+    }
+
+    .fish-entry h3 {
+      margin: 5px 0;
+      color: #ffeb3b;
+    }
+
+    #fish-entry-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+
+    #prev-fish, #next-fish {
+      padding: 10px 20px;
+      font-size: 24px;
+      background: #333;
+      margin: 0;
+    }
+
+    #current-fish-entry {
+      flex-grow: 1;
+      margin: 0 20px;
+      padding: 10px;
+      border: 1px solid #666;
+      border-radius: 5px;
+      text-align: left;
+    }
+
+    .item-details {
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .item-details h3 {
+      margin: 0;
+      color: #ffeb3b;
+    }
+
+    .item-details p {
+      margin: 5px 0;
+    }
+
+    .depth-marker {
+      position: absolute;
+      right: 20px;
+      color: white;
+      font-size: 14px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    #title-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw; 
+      height: 100vh;
+      background: linear-gradient(180deg, 
+        skyblue 0%, 
+        #189eff 60%, 
+        #1585d8 80%, 
+        #116ba9 90%, 
+        #0d5180 100%
+      );
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .title-cloud {
+      position: absolute;
+      width: 100px;
+      image-rendering: pixelated;
+      animation: float-title 20s linear infinite;
+      z-index: 1001;
+    }
+
+    @keyframes float-title {
+      from { transform: translateX(-100px); }
+      to { transform: translateX(calc(100vw + 100px)); }
+    }
+
+    #title-screen img.logo {
+      width: 400px;
+      margin-bottom: 40px;
+      image-rendering: pixelated;
+      z-index: 1002;
+    }
+
+    #title-water-border {
+      position: absolute;
+      bottom: 30%; 
+      width: 100%;
+      height: 20px;
+      background: url('watersurfaceborder.png') repeat-x;
+      background-size: contain;
+      image-rendering: pixelated;
+      z-index: 900;
+    }
+
+    #title-ocean {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 30%;
+      background: #0d5180;
+      z-index: 899;
+    }
+
+    #shop {
+      max-height: 80vh;
+      overflow-y: auto;
+      min-width: 400px;
+    }
+
+    .shop-item img {
+      width: 50px;
+      height: 50px;
+      image-rendering: pixelated;
+    }
+
+    .shop-item button {
+      margin: 0;
+      min-width: 80px;
+    }
+
+    .shop-item button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    .item-details {
+      flex-grow: 1;
+    }
+
+    .item-details h3 {
+      margin: 0;
+      color: #ffeb3b;
+    }
+
+    .item-details p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    #hook-thruster {
+      position: absolute;
+      width: 20px;
+      height: auto;
+      image-rendering: pixelated;
+      z-index: 1;
+      display: none;
+    }
+
+    .info-button, .info-modal {
+      display: none;
+    }
+
+    #codes {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      z-index: 1500;
+      text-align: center;
+      min-width: 300px;
+      max-width: 600px;
+      width: 90%;
+      border: 2px solid #189eff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .code-entry {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .code-entry input {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #189eff;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-family: 'Tahoma', sans-serif;
+    }
+
+    #title-screen .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1500;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div id="title-screen">
+    <img src="fishgtitle.png" alt="FISHG" class="logo">
+    <div class="button-container">
+      <button class="title-button" onclick="startGame()">Start fishging!</button>
+      <button class="title-button" onclick="showCodes()">Codes</button>
+    </div>
+    <div id="title-water-border"></div>
+    <div id="title-ocean"></div> 
+  </div>
+  <div id="game">
+    <div id="ocean"></div>
+    <div id="deep-ocean"></div>
+    <div id="score">Coinz: 0</div>
+    <div id="depth-counter">Depth: 0m</div>
+    <img src="boatandeperson.png" id="boat" alt="boat">
+    <img src="fishingrod.png" id="rod" alt="rod">
+    <div id="fishing-line"></div>
+    <img src="hook.png" id="hook" alt="hook">
+    <img src="hookfire.png" id="hook-fire" alt="Hook Fire" style="display: none;">
+    <div id="water-border"></div>
+    <img src="hookthrusteroff.png" id="hook-thruster" alt="Hook Thruster">
+  </div>
+  <div id="summary-screen">
+    <h2>you:</h2>
+    <p id="fish-count">caught x fish</p>
+    <p id="money-earned">got y money</p>
+    <p id="fish-types">discovered z type(s) of fishg</p>
+    <p>congrats i guess</p>
+    <button onclick="showFishgopedia()">fishg-o-pedia</button>
+    <button onclick="showShop()">Shop</button>
+    <button onclick="closeSummary()">ok cool</button>
+  </div>
+
+  <div id="fishgopedia">
+    <h2>fishg-o-pedia</h2>
+    <div id="fish-entry-container">
+      <button id="prev-fish">&#x2190;</button>
+      <div id="current-fish-entry"></div>
+      <button id="next-fish">&#x2192;</button>
+    </div>
+    <button onclick="closeFishgopedia()">close</button>
+  </div>
+
+  <div id="shop">
+    <h2>Shop</h2>
+    <div class="shop-items">
+      <div class="shop-item" data-cost="200" data-type="length">
+        <img src="lenghtplus.png" alt="Length Upgrade">
+        <div class="item-details">
+          <h3>Fishing Rod Length+</h3>
+          <p>Fish deeper in the ocean!</p>
+          <p>Cost: 200 coinz</p>
+        </div>
+        <button onclick="purchaseItem(&apos;length&apos;)">Buy</button>
+      </div>
+      <div class="shop-item" data-cost="400" data-type="anti-jellyfish">
+        <img src="antijellyfishgbait.png" alt="Anti-Jellyfishg Bait">
+        <div class="item-details">
+          <h3>Anti-Jellyfishg Bait</h3>
+          <p>Attach a scary sunfish cutout to your hook!</p>
+          <p>Cost: 400 coinz</p>
+          <p>(Requires discovering Jellyfishg first)</p>
+        </div>
+        <button onclick="purchaseItem(&apos;anti-jellyfish&apos;)">Buy</button>
+      </div>
+      <div class="shop-item" data-cost="500" data-type="thruster">
+        <img src="hookthruster.png" alt="Hook Thruster">
+        <div class="item-details">
+          <h3>Hook Thruster</h3>
+          <p>Hold space to move faster!</p>
+          <p>Cost: 500 coinz</p>
+        </div>
+        <button onclick="purchaseItem(&apos;thruster&apos;)">Buy</button>
+      </div>
+    </div>
+    <button onclick="closeShop()">Close</button>
+  </div>
+
+  <div id="codes">
+    <h2>Codes</h2>
+    <div class="code-entry">
+      <input type="text" id="code-input" placeholder="Enter code...">
+      <button onclick="submitCode()">Submit</button>
+    </div>
+    <button onclick="closeCodes()">Close</button>
+  </div>
+
+  <script>const game = document.getElementById('game');
+const hook = document.getElementById('hook');
+const rod = document.getElementById('rod');
+const line = document.getElementById('fishing-line');
+const scoreElement = document.getElementById('score');
+const summaryScreen = document.getElementById('summary-screen');
+const fishgopedia = document.getElementById('fishgopedia');
+const hookFire = document.getElementById('hook-fire');
+let savedScore = parseInt(localStorage.getItem('fishgScore')) || 0;
+let savedDepthUpgrades = parseInt(localStorage.getItem('fishgDepthUpgrades')) || 0;
+let savedAntiJellyfishBait = localStorage.getItem('fishgAntiJellyfishBait') === 'true';
+let savedHookThruster = localStorage.getItem('fishgHookThruster') === 'true';
+let score = savedScore;
+let isHookMoving = false;
+let hookDirection = 'down';
+let caughtFish = [];
+let gameActive = true;
+const BASE_MAX_DEPTH = 200;
+let depthUpgrades = savedDepthUpgrades;
+let MAX_DEPTH = BASE_MAX_DEPTH + depthUpgrades * 50;
+let currentHookOffset = 0;
+let discoveredFishTypes = new Set();
+let activeFishIntervals = new Map();
+const FISH_TYPES = {
+  'BASIC_BLUE': {
+    name: 'Small Fish',
+    scientificName: 'Fishgius Commoningus',
+    sprite: 'fish.png',
+    rarity: 'Common',
+    value: 10,
+    description: 'Very common fish, prefers to swim at the top part of the ocean.'
+  },
+  'JUNK': {
+    name: 'Junk',
+    scientificName: 'Discardus Trashus',
+    sprites: ['discardedbottlejunk.png', 'discardedcanjunk.png', 'discardedfoilbagjunk.png', 'discardedtirejunk.png'],
+    rarity: 'Uncommon',
+    value: 1,
+    description: "why does this have a scientific name? i don't know, ask the people who discovered this.",
+    collectedSprites: []
+  },
+  'TEETHY': {
+    name: 'Teethy Fish',
+    scientificName: 'Sillyus Teethus',
+    sprite: 'teethyfish.png',
+    rarity: 'Uncommon',
+    value: 35,
+    description: 'This fish tries to look scary to predators by showing its teeth, but just looks silly, hunts small fish.'
+  },
+  'SHARK': {
+    name: 'Shark',
+    scientificName: 'Dangerousingus Sharkus',
+    sprite: 'shark.png',
+    rarity: 'Rare',
+    value: 100,
+    description: 'A typical shark, its somehow not aggressive to your fishing bait'
+  },
+  'JELLYFISH': {
+    name: 'Jellyfishg',
+    scientificName: 'Stupidus Jellius',
+    sprite: 'jellyfish.png',
+    rarity: 'Common',
+    value: -10,
+    description: 'these things are pretty bad, you lose money by fishing them'
+  },
+  'ANGLERFISH': {
+    name: 'Anglerfishg',
+    scientificName: 'Glowus Fishus',
+    sprite: 'anglerfishg.png',
+    rarity: 'Very Rare',
+    value: 150,
+    description: 'dont let his cuteness fool you, he is a hired assasin that shows no mercy to his victims'
+  },
+  'ELECTRIC_EEL': {
+    name: 'Electric eel',
+    scientificName: 'Shockus Snakus',
+    sprite: 'electriceel.png',
+    rarity: 'Rare',
+    value: 200,
+    description: 'pikachu wannabe\nwill shock you if you catch it'
+  },
+  'HELLFISH': {
+    name: 'Hellfishg',
+    scientificName: 'Netherus Hotus',
+    sprite: 'hellfish.gif',
+    rarity: 'Very Rare',
+    value: 400,
+    description: "the fire isn't actually real, its the fish's fins, but those fins are very hot, causing prey to somehow light on fire underwater."
+  },
+  'JUNKFISH': {
+    name: 'Junkfishg',
+    scientificName: 'Magnetius trashus',
+    sprite: 'junkfish.png',
+    rarity: 'Uncommon',
+    value: 375,
+    description: "this fish has adapted to the littered sea, and evolved to be magnetic, it now scoots around the deep sea, slowly catching more discarded objects.\ncreator's note: this is probably my favourite fish so far :)"
+  },
+  'EPIC_FISH': {
+    name: 'Epic Fish',
+    scientificName: 'Epicius Maximus',
+    sprite: 'fish-epic.png',
+    rarity: 'Legendary',
+    value: 100,
+    description: 'A truly epic fish that only appears in small numbers.'
+  },
+  'LEGENDARY_FISH': {
+    name: 'Legendary Fish',
+    scientificName: 'Legendarius Maximus',
+    sprite: 'fish-legendary.png',
+    rarity: 'Ultra Legendary',
+    value: 500,
+    description: 'The rarest and most valuable fish in the ocean. Known for its incredible speed and elusive nature.'
+  },
+  'GODLY_FISH': {
+    name: 'Godly Fish',
+    scientificName: 'Deitus Maximus',
+    sprite: 'fish-godly.png',
+    rarity: 'Divine',
+    value: 1000,
+    description: 'A fish of divine origin. This mystical creature can only be caught alone, refusing to be captured alongside other fish.'
+  }
+};
+let currentFishIndex = 0;
+const fishTypesList = ['BASIC_BLUE', 'JUNK', 'TEETHY', 'SHARK', 'JELLYFISH', 'ANGLERFISH', 'ELECTRIC_EEL', 'HELLFISH', 'JUNKFISH', 'EPIC_FISH'];
+fishTypesList.push('GODLY_FISH');
+fishTypesList.push('LEGENDARY_FISH');
+const cloudPositions = new Set();
+const PIXELS_PER_METER = 100;
+const depthCounter = document.getElementById('depth-counter');
+let hasAntiJellyfishBait = savedAntiJellyfishBait;
+let hasHookThruster = savedHookThruster;
+let isStunned = false;
+let stunRemainingTime = 0;
+let lastStunTime = 0;
+let speedBoostActive = false;
+let gameStarted = false;
+let isThrusterActive = false;
+let epicFishCount = 0;
+let epicFishCaught = 0;
+let legendaryFishTimer = null;
+let legendaryFishSpawned = false;
+scoreElement.textContent = `Coinz: ${score}`;
+let lastCameraUpdate = 0;
+const CAMERA_UPDATE_INTERVAL = 16;
+const MAX_FISH_COUNT = 100;
+function updateFishingLine() {
+  const rodRect = rod.getBoundingClientRect();
+  const hookRect = hook.getBoundingClientRect();
+  const startX = rodRect.left + rodRect.width * 0.8;
+  const startY = rodRect.top + rodRect.height * 0.2;
+  const endY = parseFloat(hook.style.top) / 100 * window.innerHeight;
+  const hookX = startX - hookRect.width / 2 + currentHookOffset;
+  hook.style.left = `${hookX}px`;
+  const length = endY - startY;
+  line.style.height = `${length}px`;
+  line.style.left = `${startX + currentHookOffset}px`;
+  line.style.top = `${startY}px`;
+  if (speedBoostActive) {
+    hookFire.style.display = 'block';
+    hookFire.style.left = hook.style.left;
+    hookFire.style.top = hook.style.top;
+  } else {
+    hookFire.style.display = 'none';
+  }
+  caughtFish.forEach(fish => {
+    fish.style.left = hookX + hookRect.width / 2 - fish.offsetWidth / 2 + 'px';
+    fish.style.top = hookRect.top + 'px';
+  });
+  if (hasHookThruster) {
+    const hookRect = hook.getBoundingClientRect();
+    const thruster = document.getElementById('hook-thruster');
+    thruster.style.display = 'block';
+    thruster.style.left = `${hookRect.left + hookRect.width / 2 - 10}px`;
+    thruster.style.top = `${hookRect.top + hookRect.height}px`;
+    thruster.src = isThrusterActive ? 'hookthrusteron.png' : 'hookthrusteroff.png';
+  } else {
+    document.getElementById('hook-thruster').style.display = 'none';
+  }
+}
+function updateCamera() {
+  const now = performance.now();
+  if (now - lastCameraUpdate < CAMERA_UPDATE_INTERVAL) {
+    return;
+  }
+  lastCameraUpdate = now;
+  const hookTop = parseFloat(hook.style.top);
+  const cameraOffset = hookTop - 50;
+  game.style.transform = `translateY(-${cameraOffset}vh)`;
+  const depthInMeters = Math.round(parseFloat(hook.style.top) / 100 * window.innerHeight / PIXELS_PER_METER);
+  depthCounter.textContent = `Depth: ${depthInMeters}m`;
+  document.querySelectorAll('.depth-marker').forEach(m => m.remove());
+  const viewportHeight = window.innerHeight;
+  const currentDepth = cameraOffset / 100 * viewportHeight;
+  const startMeter = Math.floor(currentDepth / PIXELS_PER_METER / 5) * 5;
+  const visibleMeters = Math.ceil(viewportHeight / PIXELS_PER_METER) + 5;
+  for (let i = startMeter; i <= startMeter + visibleMeters; i += 5) {
+    if (i <= 0) continue;
+    const marker = document.createElement('div');
+    marker.className = 'depth-marker';
+    marker.textContent = `${i}m`;
+    marker.style.top = `${(i * PIXELS_PER_METER - currentDepth) / viewportHeight * 100}vh`;
+    game.appendChild(marker);
+  }
+}
+function showFishgopedia() {
+  if (!gameStarted) {
+    document.getElementById('title-screen').style.display = 'none';
+  } else {
+    summaryScreen.style.display = 'none';
+  }
+  fishgopedia.style.display = 'block';
+  currentFishIndex = 0;
+  updateFishEntry();
+}
+function closeFishgopedia() {
+  fishgopedia.style.display = 'none';
+  if (!gameStarted) {
+    document.getElementById('title-screen').style.display = 'flex';
+  }
+}
+function closeShop() {
+  document.getElementById('shop').style.display = 'none';
+  if (!gameStarted) {
+    document.getElementById('title-screen').style.display = 'flex';
+  }
+}
+function showShop() {
+  if (!gameStarted) {
+    document.getElementById('title-screen').style.display = 'none';
+  } else {
+    summaryScreen.style.display = 'none';
+  }
+  document.getElementById('shop').style.display = 'block';
+  updateShopButtons();
+}
+function startGame() {
+  document.getElementById('codes').style.display = 'none';
+  document.querySelectorAll('.title-cloud').forEach(cloud => cloud.remove());
+  document.getElementById('title-screen').style.display = 'none';
+  gameStarted = true;
+  isThrusterActive = false;
+  epicFishCount = 0;
+  legendaryFishSpawned = false;
+  if (legendaryFishTimer) {
+    clearInterval(legendaryFishTimer);
+  }
+  legendaryFishTimer = setInterval(() => {
+    if (gameActive && !legendaryFishSpawned) {
+      spawnFish();
+    }
+  }, 20000);
+  const fishTypesToSpawn = ['BASIC_BLUE', 'SHARK', 'TEETHY', 'JELLYFISH', 'ANGLERFISH', 'ELECTRIC_EEL', 'HELLFISH', 'JUNKFISH'];
+  fishTypesToSpawn.forEach(fishType => {
+    for (let i = 0; i < 5; i++) {
+      const fish = document.createElement('img');
+      const depth = Math.random() * (MAX_DEPTH - 50) + 50;
+      fish.dataset.type = fishType;
+      const fishData = FISH_TYPES[fishType];
+      fish.src = fishData.sprite;
+      let fishClass = 'fish';
+      if (fishType === 'SHARK') fishClass += ' shark-fish';else if (fishType === 'TEETHY') fishClass += ' teethy-fish';else if (fishType === 'JELLYFISH') fishClass += ' jellyfish';else if (fishType === 'ANGLERFISH') fishClass += ' anglerfish';else if (fishType === 'ELECTRIC_EEL') fishClass += ' electric-eel';else if (fishType === 'HELLFISH') fishClass += ' hellfish';else if (fishType === 'JUNKFISH') fishClass += ' junkfish';
+      fish.className = fishClass;
+      fish.style.left = Math.random() * 90 + 5 + '%';
+      fish.style.top = depth + '%';
+      game.appendChild(fish);
+      let direction = 1;
+      let startX = parseFloat(fish.style.left);
+      const fishInterval = setInterval(() => {
+        if (!gameActive || fish.classList.contains('caught')) {
+          cleanupFish(fish);
+          return;
+        }
+        startX += direction * 0.2;
+        if (startX > 95) direction = -1;
+        if (startX < 5) direction = 1;
+        fish.style.left = startX + '%';
+        fish.style.transform = `scaleX(${direction})`;
+      }, 50);
+      activeFishIntervals.set(fish, fishInterval);
+    }
+  });
+}
+function updateFishEntry() {
+  const fishType = fishTypesList[currentFishIndex];
+  const fish = FISH_TYPES[fishType];
+  let isDiscovered;
+  if (fishType === 'JUNK') {
+    isDiscovered = fish.collectedSprites.length > 0;
+  } else {
+    isDiscovered = discoveredFishTypes.has(fishType);
+  }
+  const entryDiv = document.getElementById('current-fish-entry');
+  if (fishType === 'JUNK') {
+    let imagesHTML = '';
+    fish.sprites.forEach(sprite => {
+      if (fish.collectedSprites.includes(sprite)) {
+        imagesHTML += `<img src="${sprite}" alt="Junk" style="width: 100px; height: auto; image-rendering: pixelated; vertical-align: middle;">`;
+      } else {
+        imagesHTML += `<img src="nondiscoveredfish.png" alt="???" style="width: 100px; height: auto; image-rendering: pixelated; vertical-align: middle;">`;
+      }
+    });
+    entryDiv.innerHTML = `
+                                ${imagesHTML}
+                                <h3>${isDiscovered ? fish.name : '???'}</h3>
+                                ${isDiscovered ? `
+                                  <p><i>${fish.scientificName}</i></p>
+                                  <p>Coinz value: ${fish.value}</p>
+                                  <p>${fish.description}</p>
+                                ` : '<p>You didn\'t catch this yet</p>'}
+                              `;
+  } else {
+    entryDiv.innerHTML = `
+                                <img src="${isDiscovered ? fish.sprite : 'nondiscoveredfish.png'}" alt="${isDiscovered ? fish.name : '???'}" style="width: 100px; height: auto; image-rendering: pixelated; vertical-align: middle;">
+                                <h3>${isDiscovered ? fish.name : '???'}</h3>
+                                ${isDiscovered ? `
+                                  <p><i>${fish.scientificName}</i></p>
+                                  <p>Coinz value: ${fish.value}</p>
+                                  <p>${fish.description}</p>
+                                ` : '<p>you didnt catch this fish yet</p>'}
+                              `;
+  }
+  document.getElementById('prev-fish').disabled = currentFishIndex === 0;
+  document.getElementById('next-fish').disabled = currentFishIndex === fishTypesList.length - 1;
+}
+function spawnCloud() {
+  if (!gameStarted) {
+    const cloud = document.createElement('img');
+    cloud.src = 'cloud.png';
+    cloud.className = 'title-cloud';
+    let position;
+    if (!cloudPositions.has(1)) position = 1;else if (!cloudPositions.has(2)) position = 2;else return;
+    cloudPositions.add(position);
+    cloud.classList.add(`cloud-row-${position}`);
+    game.appendChild(cloud);
+    cloud.addEventListener('animationend', () => {
+      cloudPositions.delete(position);
+      cloud.remove();
+    });
+  }
+}
+function cleanupFish(fish) {
+  const interval = activeFishIntervals.get(fish);
+  if (interval) {
+    clearInterval(interval);
+    activeFishIntervals.delete(fish);
+  }
+}
+function spawnFish() {
+  const currentFishCount = document.querySelectorAll('.fish:not(.caught):not(.caught-fish)').length;
+  if (currentFishCount >= MAX_FISH_COUNT) {
+    return;
+  }
+  const fish = document.createElement('img');
+  const depth = Math.random() * (MAX_DEPTH - 50) + 50;
+  let fishType;
+  const depthInMeters = depth / 100 * window.innerHeight / PIXELS_PER_METER;
+  const epicFishOnScreen = document.querySelectorAll('.fish[data-type="EPIC_FISH"]').length;
+  const legendaryFishOnScreen = document.querySelectorAll('.fish[data-type="LEGENDARY_FISH"]').length;
+  if (!legendaryFishSpawned) {
+    fishType = 'LEGENDARY_FISH';
+    legendaryFishSpawned = true;
+  } else if (Math.random() < 0.02) {
+    fishType = 'GODLY_FISH';
+  } else if (epicFishCount < 3 && epicFishOnScreen < 3 - epicFishCaught) {
+    fishType = 'EPIC_FISH';
+    epicFishCount++;
+  } else {
+    if (depthInMeters >= 60) {
+      let rand = Math.random();
+      if (rand < 0.35) {
+        fishType = 'ELECTRIC_EEL';
+      } else if (rand < 0.55) {
+        fishType = 'ANGLERFISH';
+      } else if (rand < 0.70) {
+        fishType = 'SHARK';
+      } else if (rand < 0.85) {
+        fishType = 'HELLFISH';
+      } else {
+        fishType = 'TEETHY';
+      }
+    } else if (depthInMeters >= 45) {
+      let rand = Math.random();
+      if (rand < 0.30) {
+        fishType = 'JUNKFISH';
+      } else if (rand < 0.50) {
+        fishType = 'ELECTRIC_EEL';
+      } else if (rand < 0.65) {
+        fishType = 'ANGLERFISH';
+      } else if (rand < 0.80) {
+        fishType = 'SHARK';
+      } else if (rand < 0.90) {
+        fishType = 'HELLFISH';
+      } else {
+        fishType = 'TEETHY';
+      }
+    } else if (depthInMeters >= 35) {
+      let rand = Math.random();
+      if (rand < 0.3) {
+        fishType = 'ELECTRIC_EEL';
+      } else if (rand < 0.5) {
+        fishType = 'ANGLERFISH';
+      } else if (rand < 0.65) {
+        fishType = 'HELLFISH';
+      } else if (rand < 0.8) {
+        fishType = 'SHARK';
+      } else if (rand < 0.9) {
+        fishType = 'TEETHY';
+      } else {
+        fishType = 'BASIC_BLUE';
+      }
+    } else if (depthInMeters >= 20) {
+      let rand = Math.random();
+      if (rand < 0.3) {
+        fishType = 'ELECTRIC_EEL';
+      } else if (rand < 0.5) {
+        fishType = 'ANGLERFISH';
+      } else if (rand < 0.7) {
+        fishType = 'SHARK';
+      } else if (rand < 0.85) {
+        fishType = 'TEETHY';
+      } else {
+        fishType = 'BASIC_BLUE';
+      }
+    } else {
+      let rand = Math.random();
+      if (rand < 0.2 && !hasAntiJellyfishBait) {
+        fishType = 'JELLYFISH';
+      } else if (rand < 0.5) {
+        fishType = 'JUNK';
+      } else {
+        fishType = 'BASIC_BLUE';
+      }
+    }
+  }
+  const fishData = FISH_TYPES[fishType];
+  const viewportTop = -game.getBoundingClientRect().top;
+  const viewportHeight = window.innerHeight;
+  const buffer = 500;
+  if (depth / 100 * window.innerHeight < viewportTop - buffer || depth / 100 * window.innerHeight > viewportTop + viewportHeight + buffer) {
+    return;
+  }
+  if (fishType === 'JUNK') {
+    const junkSprites = fishData.sprites;
+    const randomIndex = Math.floor(Math.random() * junkSprites.length);
+    const selectedSprite = junkSprites[randomIndex];
+    fish.src = selectedSprite;
+    fish.dataset.junkSprite = selectedSprite;
+    fish.className = 'fish junk';
+  } else {
+    fish.src = fishData.sprite;
+    let fishClass = 'fish';
+    if (fishType === 'SHARK') {
+      fishClass += ' shark-fish';
+    } else if (fishType === 'TEETHY') {
+      fishClass += ' teethy-fish';
+    } else if (fishType === 'JELLYFISH') {
+      fishClass += ' jellyfish';
+    } else if (fishType === 'ANGLERFISH') {
+      fishClass += ' anglerfish';
+    } else if (fishType === 'ELECTRIC_EEL') {
+      fishClass += ' electric-eel';
+    } else if (fishType === 'HELLFISH') {
+      fishClass += ' hellfish';
+    } else if (fishType === 'JUNKFISH') {
+      fishClass += ' junkfish';
+    } else if (fishType === 'EPIC_FISH') {
+      fishClass += ' epic-fish';
+    } else if (fishType === 'LEGENDARY_FISH') {
+      fishClass += ' legendary-fish';
+    } else if (fishType === 'GODLY_FISH') {
+      fishClass += ' godly-fish';
+    }
+    fish.className = fishClass;
+  }
+  fish.dataset.type = fishType;
+  fish.style.left = Math.random() * 90 + 5 + '%';
+  fish.style.top = depth + '%';
+  if (fishType === 'JELLYFISH' && hasAntiJellyfishBait) {
+    const hookRect = hook.getBoundingClientRect();
+    const fishX = parseFloat(fish.style.left) / 100 * window.innerWidth;
+    const fishY = parseFloat(fish.style.top) / 100 * window.innerHeight;
+    const hookY = parseFloat(hook.style.top) / 100 * window.innerHeight;
+    if (Math.abs(fishX - hookRect.left) < 100 && Math.abs(fishY - hookY) < 100) {
+      fish.remove();
+      return;
+    }
+  }
+  game.appendChild(fish);
+  if (fishType === 'JUNK') {
+    let direction = Math.random() < 0.5 ? -1 : 1;
+    let startX = parseFloat(fish.style.left);
+    const fishInterval = setInterval(() => {
+      if (!gameActive || fish.classList.contains('caught')) {
+        cleanupFish(fish);
+        return;
+      }
+      if (Math.random() < 0.01) {
+        direction = Math.random() < 0.5 ? -1 : 1;
+      }
+      startX += direction * 0.05;
+      if (startX > 95) {
+        startX = 95;
+        direction = -1;
+      }
+      if (startX < 5) {
+        startX = 5;
+        direction = 1;
+      }
+      fish.style.left = startX + '%';
+      fish.style.transform = `scaleX(${direction})`;
+      if (Math.random() < 0.02) {
+        let verticalDirection = Math.random() < 0.5 ? -1 : 1;
+        let currentTop = parseFloat(fish.style.top);
+        let newTop = currentTop + verticalDirection * 0.2;
+        if (newTop < 0) newTop = 0;
+        if (newTop > 100) newTop = 100;
+        fish.style.top = newTop + '%';
+      }
+    }, 100);
+    activeFishIntervals.set(fish, fishInterval);
+  } else if (fishType === 'LEGENDARY_FISH') {
+    let direction = 1;
+    let startX = parseFloat(fish.style.left);
+    const fishInterval = setInterval(() => {
+      if (!gameActive || fish.classList.contains('caught')) {
+        cleanupFish(fish);
+        return;
+      }
+      const hookRect = hook.getBoundingClientRect();
+      const fishRect = fish.getBoundingClientRect();
+      const distanceToHook = Math.abs(hookRect.left - fishRect.left);
+      const hookInFront = direction === 1 && hookRect.left > fishRect.left || direction === -1 && hookRect.left < fishRect.left;
+      if (distanceToHook < 200 && Math.abs(hookRect.top - fishRect.top) < 100 && hookInFront) {
+        direction = hookRect.left > fishRect.left ? -1 : 1;
+        startX += direction * 2.5;
+      } else {
+        startX += direction * 1.2;
+      }
+      if (startX > 95) direction = -1;
+      if (startX < 5) direction = 1;
+      fish.style.left = startX + '%';
+      fish.style.transform = `scaleX(${direction})`;
+    }, 50);
+    activeFishIntervals.set(fish, fishInterval);
+  } else if (fishType !== 'JELLYFISH') {
+    let direction = 1;
+    let startX = parseFloat(fish.style.left);
+    const fishInterval = setInterval(() => {
+      if (!gameActive || fish.classList.contains('caught')) {
+        cleanupFish(fish);
+        return;
+      }
+      startX += direction * 0.2;
+      if (startX > 95) direction = -1;
+      if (startX < 5) direction = 1;
+      fish.style.left = startX + '%';
+      fish.style.transform = `scaleX(${direction})`;
+    }, 50);
+    activeFishIntervals.set(fish, fishInterval);
+  }
+  fish.addEventListener('remove', () => cleanupFish(fish));
+}
+function showSummary(fishCount, moneyEarned) {
+  document.getElementById('fish-count').textContent = `caught ${caughtFish.length} fish`;
+  document.getElementById('money-earned').textContent = `got ${moneyEarned} coinz`;
+  document.getElementById('fish-types').textContent = `discovered ${discoveredFishTypes.size} type(s) of fishg`;
+  summaryScreen.style.display = 'block';
+}
+function closeSummary() {
+  summaryScreen.style.display = 'none';
+  depthCounter.textContent = 'Depth: 0m';
+  caughtFish = [];
+  speedBoostActive = false;
+  isThrusterActive = false;
+  epicFishCount = 0;
+  epicFishCaught = 0;
+  legendaryFishSpawned = false;
+  localStorage.setItem('fishgScore', score);
+}
+function moveHook() {
+  if (!isHookMoving) return;
+  if (isStunned) {
+    let now = Date.now();
+    let deltaTime = now - lastStunTime;
+    stunRemainingTime -= deltaTime;
+    lastStunTime = now;
+    if (stunRemainingTime <= 0) {
+      isStunned = false;
+      hook.classList.remove('stunned');
+      document.removeEventListener('keydown', handleStunKeyPress);
+    } else {
+      updateCamera();
+      updateFishingLine();
+      requestAnimationFrame(moveHook);
+      return;
+    }
+  }
+  const moveAmount = speedBoostActive || hasHookThruster && isThrusterActive ? 1.5 : 1;
+  const currentTop = parseFloat(hook.style.top);
+  if (hookDirection === 'down') {
+    if (currentTop < MAX_DEPTH) {
+      hook.style.top = currentTop + moveAmount + '%';
+    } else {
+      hookDirection = 'up';
+    }
+  } else {
+    hook.style.top = currentTop - moveAmount + '%';
+    if (currentTop <= 35) {
+      isHookMoving = false;
+      currentHookOffset = 0;
+      if (caughtFish.length > 0) {
+        const moneyEarned = caughtFish.reduce((sum, fish) => {
+          const fishType = fish.dataset.type;
+          if (fishType === 'JUNK') {
+            return sum + FISH_TYPES['JUNK'].value;
+          }
+          return sum + (FISH_TYPES[fishType]?.value || 10);
+        }, 0);
+        score += moneyEarned;
+        scoreElement.textContent = `Coinz: ${score}`;
+        caughtFish.forEach(fish => {
+          const fishType = fish.dataset.type;
+          if (fishType && FISH_TYPES[fishType]) {
+            if (fishType === 'JUNK') {
+              const sprite = fish.dataset.junkSprite;
+              if (!FISH_TYPES['JUNK'].collectedSprites.includes(sprite)) {
+                FISH_TYPES['JUNK'].collectedSprites.push(sprite);
+              }
+              discoveredFishTypes.add('JUNK');
+            } else {
+              discoveredFishTypes.add(fishType);
+            }
+          }
+          cleanupFish(fish);
+        });
+        showSummary(caughtFish.length, moneyEarned);
+        caughtFish.forEach(fish => {
+          fish.classList.add('caught-fish');
+          setTimeout(() => fish.remove(), 1000);
+        });
+        speedBoostActive = false;
+        updateFishingLine();
+      }
+    }
+  }
+  updateCamera();
+  updateFishingLine();
+  if (hasAntiJellyfishBait) {
+    const jellyfish = document.querySelectorAll('.fish.jellyfish:not(.caught)');
+    const hookRect = hook.getBoundingClientRect();
+    jellyfish.forEach(jelly => {
+      const jellyRect = jelly.getBoundingClientRect();
+      const dx = hookRect.left - jellyRect.left;
+      const dy = hookRect.top - jellyRect.top;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < 200) {
+        const direction = dx > 0 ? -1 : 1;
+        const newLeft = jellyRect.left + direction * 10;
+        jelly.style.left = newLeft / window.innerWidth * 100 + '%';
+        jelly.style.top = jellyRect.top / window.innerHeight * 100 + '%';
+      }
+    });
+  }
+  const viewportTop = -game.getBoundingClientRect().top;
+  const viewportHeight = window.innerHeight;
+  const buffer = 200;
+  const fishes = document.querySelectorAll('.fish:not(.caught):not(.caught-fish)');
+  const visibleFishes = Array.from(fishes).filter(fish => {
+    const fishRect = fish.getBoundingClientRect();
+    return fishRect.top > viewportTop - buffer && fishRect.bottom < viewportTop + viewportHeight + buffer;
+  });
+  visibleFishes.forEach(fish => {
+    const fishRect = fish.getBoundingClientRect();
+    const hookRect = hook.getBoundingClientRect();
+    if (hookRect.left < fishRect.right && hookRect.right > fishRect.left && hookRect.top < fishRect.bottom && hookRect.bottom > fishRect.top) {
+      if (!caughtFish.includes(fish)) {
+        if (fish.dataset.type === 'GODLY_FISH') {
+          if (caughtFish.length > 0) {
+            return;
+          }
+          for (let i = 0; i < 10; i++) {
+            setTimeout(() => {
+              if (gameActive) spawnFish();
+            }, i * 100);
+          }
+        } else if (caughtFish.some(f => f.dataset.type === 'GODLY_FISH')) {
+          return;
+        }
+        fish.classList.add('caught');
+        caughtFish.push(fish);
+        fish.style.position = 'fixed';
+        fish.style.transition = 'left 0.1s, top 0.1s';
+        cleanupFish(fish);
+        if (fish.dataset.type === 'ELECTRIC_EEL') {
+          isStunned = true;
+          stunRemainingTime = 1000;
+          lastStunTime = Date.now();
+          hook.classList.add('stunned');
+          document.addEventListener('keydown', handleStunKeyPress);
+        }
+        if (fish.dataset.type === 'HELLFISH') {
+          speedBoostActive = true;
+          updateFishingLine();
+        }
+        if (fish.dataset.type === 'EPIC_FISH') {
+          epicFishCaught++;
+          if (epicFishCaught >= 3) {
+            epicFishCaught = 0;
+            epicFishCount = 0;
+          }
+        }
+        if (fish.dataset.type === 'LEGENDARY_FISH') {
+          legendaryFishSpawned = false;
+          for (let i = 0; i < 10; i++) {
+            setTimeout(() => {
+              if (gameActive) spawnFish();
+            }, i * 100);
+          }
+        }
+        if (fish.dataset.type !== 'GODLY_FISH' && fish.dataset.type !== 'LEGENDARY_FISH') {
+          for (let i = 0; i < 2; i++) {
+            setTimeout(() => {
+              if (gameActive) {
+                const extraFish = document.createElement('img');
+                extraFish.src = fish.src;
+                extraFish.className = fish.className;
+                extraFish.dataset.type = fish.dataset.type;
+                extraFish.style.left = Math.random() * 90 + 5 + '%';
+                extraFish.style.top = Math.random() * (MAX_DEPTH - 50) + 50 + '%';
+                game.appendChild(extraFish);
+                let direction = 1;
+                let startX = parseFloat(extraFish.style.left);
+                const fishInterval = setInterval(() => {
+                  if (!gameActive || extraFish.classList.contains('caught')) {
+                    cleanupFish(extraFish);
+                    return;
+                  }
+                  startX += direction * 0.2;
+                  if (startX > 95) direction = -1;
+                  if (startX < 5) direction = 1;
+                  extraFish.style.left = startX + '%';
+                  extraFish.style.transform = `scaleX(${direction})`;
+                }, 50);
+                activeFishIntervals.set(extraFish, fishInterval);
+              }
+            }, i * 100);
+          }
+        }
+      }
+    }
+  });
+  const junkfishList = document.querySelectorAll('.fish.junkfish:not(.caught):not(.caught-fish)');
+  const visibleJunkfish = Array.from(junkfishList).filter(fish => {
+    const fishRect = fish.getBoundingClientRect();
+    return fishRect.top > viewportTop - buffer && fishRect.bottom < viewportTop + viewportHeight + buffer;
+  });
+  visibleJunkfish.forEach(junkfish => {
+    const junkfishRect = junkfish.getBoundingClientRect();
+    const hookRect = hook.getBoundingClientRect();
+    const dx = junkfishRect.left + junkfishRect.width / 2 - (hookRect.left + hookRect.width / 2);
+    const dy = junkfishRect.top + junkfishRect.height / 2 - (hookRect.top + hookRect.height / 2);
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < 200) {
+      const pullStrength = 1.5;
+      const angle = Math.atan2(dy, dx);
+      const offsetX = Math.cos(angle) * pullStrength;
+      const offsetY = Math.sin(angle) * pullStrength;
+      const currentLeftPercent = parseFloat(hook.style.left);
+      const currentTopPercent = parseFloat(hook.style.top);
+      const newLeft = currentLeftPercent + offsetX / window.innerWidth * 100;
+      const newTop = currentTopPercent + offsetY / window.innerHeight * 100;
+      hook.style.left = `${newLeft}%`;
+      hook.style.top = `${newTop}%`;
+      updateFishingLine();
+    }
+  });
+  requestAnimationFrame(moveHook);
+}
+function handleStunKeyPress(e) {
+  if (isStunned && e.key.toLowerCase() === 'e') {
+    stunRemainingTime -= 100;
+    if (stunRemainingTime <= 0) {
+      isStunned = false;
+      hook.classList.remove('stunned');
+      document.removeEventListener('keydown', handleStunKeyPress);
+    } else {
+      updateCamera();
+      updateFishingLine();
+      requestAnimationFrame(moveHook);
+      return;
+    }
+  }
+}
+function spawnTitleCloud() {
+  if (!gameStarted) {
+    const existingClouds = document.querySelectorAll('.title-cloud').length;
+    if (existingClouds >= 3) {
+      return;
+    }
+    const cloud = document.createElement('img');
+    cloud.src = 'cloud.png';
+    cloud.className = 'title-cloud';
+    cloud.style.top = Math.random() * 30 + '%';
+    document.getElementById('title-screen').appendChild(cloud);
+    cloud.addEventListener('animationend', () => {
+      cloud.remove();
+    });
+  }
+}
+document.getElementById('prev-fish').addEventListener('click', () => {
+  if (currentFishIndex > 0) {
+    currentFishIndex--;
+    updateFishEntry();
+  }
+});
+document.getElementById('next-fish').addEventListener('click', () => {
+  if (currentFishIndex < fishTypesList.length - 1) {
+    currentFishIndex++;
+    updateFishEntry();
+  }
+});
+function purchaseItem(type) {
+  const item = document.querySelector(`.shop-item[data-type="${type}"]`);
+  const button = item.querySelector('button');
+  const cost = parseInt(item.dataset.cost);
+  if (type === 'length' && score >= cost) {
+    score -= cost;
+    depthUpgrades++;
+    MAX_DEPTH = BASE_MAX_DEPTH + depthUpgrades * 50;
+    scoreElement.textContent = `Coinz: ${score}`;
+    localStorage.setItem('fishgScore', score);
+    localStorage.setItem('fishgDepthUpgrades', depthUpgrades);
+  } else if (type === 'anti-jellyfish' && score >= cost && discoveredFishTypes.has('JELLYFISH')) {
+    score -= cost;
+    hasAntiJellyfishBait = true;
+    scoreElement.textContent = `Coinz: ${score}`;
+    localStorage.setItem('fishgScore', score);
+    localStorage.setItem('fishgAntiJellyfishBait', 'true');
+  } else if (type === 'thruster' && score >= cost) {
+    score -= cost;
+    hasHookThruster = true;
+    scoreElement.textContent = `Coinz: ${score}`;
+    localStorage.setItem('fishgScore', score);
+    localStorage.setItem('fishgHookThruster', 'true');
+  }
+  updateShopButtons();
+}
+function showInfo() {}
+function closeInfo() {}
+function updateShopButtons() {
+  document.querySelectorAll('.shop-item').forEach(item => {
+    const button = item.querySelector('button');
+    const cost = parseInt(item.dataset.cost);
+    const type = item.dataset.type;
+    if (type === 'anti-jellyfish') {
+      button.disabled = score < cost || !discoveredFishTypes.has('JELLYFISH');
+    } else {
+      button.disabled = score < cost;
+    }
+  });
+}
+hook.style.left = '55%';
+hook.style.top = '35%';
+updateFishingLine();
+game.addEventListener('mousemove', e => {
+  if (isHookMoving) {
+    const rodRect = rod.getBoundingClientRect();
+    const rodCenter = rodRect.left + rodRect.width * 0.8;
+    const mouseOffset = e.clientX - rodCenter;
+    currentHookOffset = mouseOffset;
+    updateFishingLine();
+  }
+});
+game.addEventListener('click', () => {
+  if (!isHookMoving && gameActive && gameStarted) {
+    isHookMoving = true;
+    hookDirection = 'down';
+    moveHook();
+  }
+});
+setInterval(spawnCloud, 10000);
+spawnCloud();
+setInterval(() => {
+  if (gameActive) {
+    spawnFish();
+  }
+}, 2000);
+setInterval(spawnTitleCloud, 5000);
+for (let i = 0; i < 3; i++) {
+  spawnTitleCloud();
+}
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && hasHookThruster && isHookMoving) {
+    e.preventDefault();
+    isThrusterActive = true;
+    updateFishingLine();
+  }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space') {
+    isThrusterActive = false;
+    updateFishingLine();
+  }
+});
+function showCodes() {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('codes').style.display = 'block';
+}
+function closeCodes() {
+  document.getElementById('codes').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'flex';
+}
+function submitCode() {
+  const codeInput = document.getElementById('code-input');
+  const code = codeInput.value.toUpperCase().trim();
+  const codes = {
+    'RELEASE': 5000,
+    'MOONZY': 999999,
+    'SIGMA': 999999,
+    'SKID': 1111111
+  };
+  if (codes[code] !== undefined) {
+    score += codes[code];
+    scoreElement.textContent = `Coinz: ${score}`;
+    localStorage.setItem('fishgScore', score);
+    alert('Code redeemed successfully!');
+    codeInput.value = '';
+  } else {
+    alert('Invalid code!');
+  }
+}</script>
+</body>
+</html>
